@@ -15,6 +15,7 @@ const registerUser = asyncHandler(async (req, res) => {
   ) {
     throw new ApiError(400, "All fields are required");
   }
+
   //check if user already exists : check through email or username
   const user = await User.findOne({ $or: [{ email }, { username }] });
   if (user) {
@@ -31,7 +32,9 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
-  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+  const coverImage = await uploadOnCloudinary(
+    coverImageLocalPath ? coverImageLocalPath : ""
+  );
 
   if (!avatar) {
     throw new ApiError(400, "Avatar upload failed");
@@ -48,7 +51,7 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   //remove password and refresh token field from response
-  const createdUser = await User.findById(user._id).select(
+  const createdUser = await User.findById(newUser._id).select(
     "-password -refreshToken"
   );
   //check for user creation
